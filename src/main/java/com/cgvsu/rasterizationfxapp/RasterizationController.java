@@ -25,6 +25,7 @@ public class RasterizationController {
 
         Rasterization.drawCircle(canvas.getGraphicsContext2D(), 200, 200, 150, Color.RED);
         Rasterization.drawSector(canvas.getGraphicsContext2D(), 200, 200, 4, 1, 1, 4, 150, Color.BLUE);
+        // Circle circle = new Circle(canvas.getGraphicsContext2D(), 250, 250, 150, Color.RED);
     }
 
 }
