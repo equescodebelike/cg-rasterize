@@ -68,32 +68,30 @@ public class Rasterization {
             int sectstartx, int sectstarty,
             int sectendx, int sectendy,
             int radius,
-            Color c1, Color c2) {
-
-        int startR = (int) c1.getRed();
-        int startG = (int) c1.getGreen();
-        int startB = (int) c1.getBlue();
-        int endR = (int) c2.getRed();
-        int endG = (int) c2.getGreen();
-        int endB = (int) c2.getBlue();
+            Color c0, Color c1) {
 
         final PixelWriter pixelWriter = graphicsContext.getPixelWriter();
 
-        double path = (int) Math.sqrt(Math.pow(sectendx - sectstartx, 2) + Math.pow(sectendy - sectstarty, 2));
-        double pathpassed;
-        double pathRatio;
-        Color currColor = c1;
+        double startR = c0.getRed();
+        double startG = c0.getGreen();
+        double startB = c0.getBlue();
+        double endR = c1.getRed();
+        double endG = c1.getGreen();
+        double endB = c1.getBlue();
 
-        for (int j = -radius; j < radius; j++) {
-            int hh = (int) Math.sqrt(radius * radius - j * j);
-            int rx = centx + j;
-            int ph = centy + hh;
+        // double path = (int) Math.sqrt(Math.pow())
 
-            for (int i = centy - hh; i <= ph; i++)
-                if (isInsideSector(rx, i, centx, centy, sectstartx, sectstarty, sectendx, sectendy, radius)) {
-                    pixelWriter.setColor(rx, i, currColor);
+
+        int px;
+        int py;
+
+        for (int x = -radius; x < radius; x++) {
+            int height = (int) Math.sqrt(radius * radius - x * x);
+
+            for (int y = -height; y < height; y++)
+                if (isInsideSector(x + centx, y + centy, centx, centy, sectstartx, sectstarty, sectendx, sectendy, radius)) {
+                    // pixelWriter.setColor(x + centx, y + centy, color);
                 }
-
         }
 
 
@@ -105,17 +103,7 @@ public class Rasterization {
             int sectstartx, int sectstarty,
             int sectendx, int sectendy,
             int radius,
-            Color c1, Color c2, Color c3) {
-
-        double r1 = c1.getRed();
-        double g1 = c1.getGreen();
-        double b1 = c1.getBlue();
-        double r2 = c2.getRed();
-        double g2 =  c2.getGreen();
-        double b2 =  c2.getBlue();
-        double r3 =  c3.getRed();
-        double g3 =  c3.getGreen();
-        double b3 =  c3.getBlue();
+            Color color) {
 
         final PixelWriter pixelWriter = graphicsContext.getPixelWriter();
 
@@ -127,26 +115,26 @@ public class Rasterization {
             }
         } */
 
-        for (int j = -radius; j < radius; j++) {
+        /*for (int j = -radius; j < radius; j++) {
             int hh = (int) Math.sqrt(radius * radius - j * j);
             int rx = centx + j;
             int ph = centy + hh;
 
             for (int i = centy - hh; i <= ph; i++)
                 if (isInsideSector(rx, i, centx, centy, sectstartx, sectstarty, sectendx, sectendy, radius)) {
-                    double detT = (sectstarty - sectendy) * (centx - sectendx) + (sectendx - sectstartx) * (centy - sectendy);
-                    double alpha = ((sectstarty - sectendy) * (j - sectendx) + (sectendx - sectstartx) * (i - sectendy)) / detT;
-                    double betta = ((sectendy - centy) * (j - sectendx) + (centx - sectendx) * (i - sectendy)) / detT;
-                    double gamma = 1 - alpha - betta;
-                    int r = (int) (alpha * r1 + betta * r2 + gamma * r3);
-                    int g = (int) (alpha * g1 + betta * g2 + gamma * g3);
-                    int b = (int) (alpha * b1 + betta * b2 + gamma * b3);
-                    pixelWriter.setColor(rx, i, Color.rgb(r, g, b));
+                    pixelWriter.setColor(rx, i, color);
                 }
 
+        }*/
+
+        for (int x = -radius; x <= radius; x++) {
+            int height = (int) Math.sqrt(radius * radius - x * x);
+
+            for (int y = -height; y <= height; y++)
+                if (isInsideSector(x + centx, y + centy, centx, centy, sectstartx, sectstarty, sectendx, sectendy, radius)) {
+                    pixelWriter.setColor(x + centx, y + centy, color);
+                }
         }
-
-
     }
 
     private static int calculateStartDelta(int radius) {
@@ -179,8 +167,16 @@ public class Rasterization {
         int relpointx = px - centx;
         int relpointy = py - centy;
 
-        return !areClockwise(sectstartx, sectstarty, relpointx, relpointy) && areClockwise(sectendx, sectendy, relpointx, relpointy) &&
-                isWithinRadius(relpointx, relpointy, radius * radius);
+        if (areClockwise(sectstartx, sectstarty, sectendx, sectendy)) {
+            return !(!areClockwise(sectstartx, sectstarty, relpointx, relpointy) &&
+                    areClockwise(sectendx, sectendy, relpointx, relpointy)) &&
+                    isWithinRadius(relpointx, relpointy, radius * radius);
+        } else {
+            return !areClockwise(sectstartx, sectstarty, relpointx, relpointy) &&
+                    areClockwise(sectendx, sectendy, relpointx, relpointy) &&
+                    isWithinRadius(relpointx, relpointy, radius * radius);
+        }
+
     }
 
 }
