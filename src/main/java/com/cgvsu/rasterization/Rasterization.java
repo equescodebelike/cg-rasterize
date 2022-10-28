@@ -82,19 +82,28 @@ public class Rasterization {
         // double path = (int) Math.sqrt(Math.pow())
 
 
-        int px;
-        int py;
+        // int rx;
+        // int ry;
 
-        for (int x = -radius; x < radius; x++) {
+        for (int x = -radius; x <= radius; x++) {
             int height = (int) Math.sqrt(radius * radius - x * x);
 
-            for (int y = -height; y < height; y++)
+            for (int y = -height; y <= height; y++)
                 if (isInsideSector(x + centx, y + centy, centx, centy, sectstartx, sectstarty, sectendx, sectendy, radius)) {
+                    int x1 = findCX(radius, centx, centy, x, y);
                     // pixelWriter.setColor(x + centx, y + centy, color);
                 }
         }
 
 
+    }
+
+    public static int findCX(int radius, int x0, int y0, int xa, int ya) {
+        return (int) (x0 + ((radius * (xa - x0)) / (Math.sqrt((int) (Math.pow(xa - x0, 2) + (int) Math.pow(ya - y0, 2))))));
+    }
+
+    public static int findCY(int radius, int x0, int y0, int xa, int ya) {
+        return (int) (y0 + ((radius * (ya - y0)) / (Math.sqrt((int) (Math.pow(xa - x0, 2) + (int) Math.pow(ya - y0, 2))))));
     }
 
     public static void drawSector(
@@ -103,7 +112,7 @@ public class Rasterization {
             int sectstartx, int sectstarty,
             int sectendx, int sectendy,
             int radius,
-            Color color) {
+            Color c0, Color c1) {
 
         final PixelWriter pixelWriter = graphicsContext.getPixelWriter();
 
@@ -131,10 +140,30 @@ public class Rasterization {
             int height = (int) Math.sqrt(radius * radius - x * x);
 
             for (int y = -height; y <= height; y++)
-                if (isInsideSector(x + centx, y + centy, centx, centy, sectstartx, sectstarty, sectendx, sectendy, radius)) {
+                if (!isInsideSector(x + centx, y + centy, centx, centy, sectstartx, sectstarty, sectendx, sectendy, radius)) {
+                    //pixelWriter.setColor(x + centx, y + centy, c0);
+                    int x1 = findCX(radius, centx, centy, x, y);
+                    int y1 = findCY(radius, centx, centy, x, y);
+                    Color color = calcColor(c0, c1, centx, centy, x1, y1, x + centx, y + centy);
                     pixelWriter.setColor(x + centx, y + centy, color);
                 }
         }
+    }
+
+    private static Color calcColor(Color c0, Color c1, int x0, int y0, int x1, int y1, int x, int y) {
+        double startR = c0.getRed();
+        double startG = c0.getGreen();
+        double startB = c0.getBlue();
+        double endR = c1.getRed();
+        double endG = c1.getGreen();
+        double endB = c1.getBlue();
+
+        double ratio = Math.sqrt((Math.pow((x - x0), 2) + Math.pow((y - y0), 2)) / (Math.pow((x1 - x0), 2) + Math.pow((y1 - y0), 2)));
+        double r = startR + (endR - startR) * ratio;
+        double g = startG + (endG - startG) * ratio;
+        double b = startB + (endB - startB) * ratio;
+
+        return Color.color(r, g, b);
     }
 
     private static int calculateStartDelta(int radius) {
@@ -150,7 +179,7 @@ public class Rasterization {
     }
 
     private static boolean areClockwise(int v1x, int v1y, int v2x, int v2y) {
-        return -v1x * v2y + v1y * v2x > 0;
+        return -v1x * v2y + v1y * v2x > 0; // ==0
     }
 
     private static boolean isWithinRadius(int x, int y, int radius) {

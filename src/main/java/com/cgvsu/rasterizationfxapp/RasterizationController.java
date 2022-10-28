@@ -23,9 +23,15 @@ public class RasterizationController {
         // Rasterization.drawRectangle(canvas.getGraphicsContext2D(), 200, 300, 200, 100, Color.CHOCOLATE);
         // Rasterization.drawRectangle(canvas.getGraphicsContext2D(), 250, 250, 50, 200, Color.AQUA);
 
-        Rasterization.drawCircle(canvas.getGraphicsContext2D(), 200, 200, 100, Color.RED);
-        Rasterization.drawSector(canvas.getGraphicsContext2D(), 200, 200, 4, 0, -4, -1, 100, Color.RED);
+        // Rasterization.drawCircle(canvas.getGraphicsContext2D(), 200, 200, 100, Color.RED);
+        // Rasterization.drawSector(canvas.getGraphicsContext2D(), 200, 200, 4, 0, -4, -1, 100, Color.RED);
         // Circle circle = new Circle(canvas.getGraphicsContext2D(), 250, 250, 150, Color.RED);
+        // int x = Rasterization.findCX(5,3,5,5,6);
+        // int y = Rasterization.findCY(5,3,5,5,6);
+        // Rasterization.drawCircle(canvas.getGraphicsContext2D(),200,200,150,Color.RED);
+        // Rasterization.drawSector(canvas.getGraphicsContext2D(),200,200,1,5,5,1,150,Color.BLUE);
+        Rasterization.drawCircle(canvas.getGraphicsContext2D(), 200, 200, 150, Color.BLACK);
+        Rasterization.drawSector(canvas.getGraphicsContext2D(), 200, 200, 1, -5, 5, 1, 150, Color.RED, Color.MAGENTA);
     }
 
 }
