@@ -7,23 +7,15 @@ import javafx.scene.paint.Color;
 
 public class Rasterization {
 
-    public static void drawRectangle(
-            final GraphicsContext graphicsContext,
-            final int x, final int y,
-            final int width, final int height,
-            final Color color) {
-        final PixelWriter pixelWriter = graphicsContext.getPixelWriter();
-
-        for (int row = y; row < y + height; ++row)
-            for (int col = x; col < x + width; ++col)
-                pixelWriter.setColor(col, row, color);
-    }
+    /**
+     * Метод отрисовки круга по алгоритму Брезенхэма (без заполнения)
+     */
 
     public static void drawCircle(
             final GraphicsContext graphicsContext,
-            int centx, int centy,
-            int radius,
-            final Color color) {
+            int center_x, int center_y, // центр окружности (х,у)
+            int radius, // радиус окружности
+            final Color color) { // цвет контура
 
         final PixelWriter pixelWriter = graphicsContext.getPixelWriter();
 
@@ -31,126 +23,58 @@ public class Rasterization {
         int y = radius;
         int delta = calculateStartDelta(radius);
 
-        while (y >= x) {
-            pixelWriter.setColor(centx + x, centy + y, color);
-            pixelWriter.setColor(centx + x, centy - y, color);
-            pixelWriter.setColor(centx - x, centy + y, color);
-            pixelWriter.setColor(centx - x, centy - y, color);
+        while (y >= x) { // прошли 45 градусов
+            pixelWriter.setColor(center_x + x, center_y + y, color); // делим круг на октанты (45 градусов)
+            pixelWriter.setColor(center_x + x, center_y - y, color);
+            pixelWriter.setColor(center_x - x, center_y + y, color);
+            pixelWriter.setColor(center_x - x, center_y - y, color);
 
-            pixelWriter.setColor(centx + y, centy + x, color);
-            pixelWriter.setColor(centx - y, centy + x, color);
-            pixelWriter.setColor(centx + y, centy - x, color);
-            pixelWriter.setColor(centx - y, centy - x, color);
+            pixelWriter.setColor(center_x + y, center_y + x, color);
+            pixelWriter.setColor(center_x - y, center_y + x, color);
+            pixelWriter.setColor(center_x + y, center_y - x, color);
+            pixelWriter.setColor(center_x - y, center_y - x, color);
 
             if (delta < 0) {
-                delta = calculateDeltaForHorizontalPixel(delta, x);
+                delta = calculateDeltaForHorizontalPixel(delta, x); // выбираем пиксель (x+1,y)
             } else {
-                delta = calculateDeltaForDiagonalPixel(delta, x, y);
+                delta = calculateDeltaForDiagonalPixel(delta, x, y); // выбираем пиксель (x+1,y-1)
                 y--;
             }
             x++;
         }
 
-        /* for (int j = -radius; j < radius; j++) {
-            int hh = (int) Math.sqrt(radius * radius - j * j);
-            int rx = centx + j;
-            int ph = centy + hh;
-
-            for (int i = centy - hh; i < ph; i++)
-                pixelWriter.setColor(rx, i, color);
-
-        } */
     }
 
-    public static void drawSectorInt(
-            final GraphicsContext graphicsContext,
-            int centx, int centy,
-            int sectstartx, int sectstarty,
-            int sectendx, int sectendy,
-            int radius,
-            Color c0, Color c1) {
-
-        final PixelWriter pixelWriter = graphicsContext.getPixelWriter();
-
-        double startR = c0.getRed();
-        double startG = c0.getGreen();
-        double startB = c0.getBlue();
-        double endR = c1.getRed();
-        double endG = c1.getGreen();
-        double endB = c1.getBlue();
-
-        // double path = (int) Math.sqrt(Math.pow())
-
-
-        // int rx;
-        // int ry;
-
-        for (int x = -radius; x <= radius; x++) {
-            int height = (int) Math.sqrt(radius * radius - x * x);
-
-            for (int y = -height; y <= height; y++)
-                if (isInsideSector(x + centx, y + centy, centx, centy, sectstartx, sectstarty, sectendx, sectendy, radius)) {
-                    int x1 = findCX(radius, centx, centy, x, y);
-                    // pixelWriter.setColor(x + centx, y + centy, color);
-                }
-        }
-
-
-    }
-
-    public static int findCX(int radius, int x0, int y0, int xa, int ya) {
-        return (int) (x0 + ((radius * (xa - x0)) / (Math.sqrt((int) (Math.pow(xa - x0, 2) + (int) Math.pow(ya - y0, 2))))));
-    }
-
-    public static int findCY(int radius, int x0, int y0, int xa, int ya) {
-        return (int) (y0 + ((radius * (ya - y0)) / (Math.sqrt((int) (Math.pow(xa - x0, 2) + (int) Math.pow(ya - y0, 2))))));
-    }
+    /**
+     * Метод отрисовки и интерполяции сектора окружности
+     */
 
     public static void drawSector(
             final GraphicsContext graphicsContext,
-            int centx, int centy,
-            int sectstartx, int sectstarty,
-            int sectendx, int sectendy,
-            int radius,
-            Color c0, Color c1) {
+            int center_x, int center_y, // центр окружности (х,у)
+            int sectstartx, int sectstarty, // точка начала сектора, от центра окружности проводится вектор к ней
+            int sectendx, int sectendy, // точка конца сектора, аналогично начальной точке
+            int radius, // радиус окружности
+            Color c0, Color c1) { // заданные цвета для интерполяции
 
         final PixelWriter pixelWriter = graphicsContext.getPixelWriter();
 
-       /* for (int i = 0; i < 8000; i++) {
-            int px = (int) (Math.random() * 800);
-            int py = (int) (Math.random() * 600);
-            if (isInsideSector(px, py, centx, centy, sectstartx, sectstarty, sectendx, sectendy, radius)) {
-                pixelWriter.setColor(px, py, color);
-            }
-        } */
-
-        /*for (int j = -radius; j < radius; j++) {
-            int hh = (int) Math.sqrt(radius * radius - j * j);
-            int rx = centx + j;
-            int ph = centy + hh;
-
-            for (int i = centy - hh; i <= ph; i++)
-                if (isInsideSector(rx, i, centx, centy, sectstartx, sectstarty, sectendx, sectendy, radius)) {
-                    pixelWriter.setColor(rx, i, color);
-                }
-
-        }*/
-
-        for (int x = -radius; x <= radius; x++) {
-            int height = (int) Math.sqrt(radius * radius - x * x);
+        for (int x = -radius; x <= radius; x++) { // алгоритм заполнения круга, выбираем только те точки, которые находятся в секторе
+            int height = (int) Math.sqrt(radius * radius - x * x); // без проверки радиуса
 
             for (int y = -height; y <= height; y++)
-                if (!isInsideSector(x + centx, y + centy, centx, centy, sectstartx, sectstarty, sectendx, sectendy, radius)) {
+                if (isInsideSector(x + center_x, y + center_y, center_x, center_y, sectstartx, sectstarty, sectendx, sectendy, radius)) {
                     //pixelWriter.setColor(x + centx, y + centy, c0);
-                    int x1 = findCX(radius, centx, centy, x, y);
-                    int y1 = findCY(radius, centx, centy, x, y);
-                    Color color = calcColor(c0, c1, centx, centy, x1, y1, x + centx, y + centy);
-                    pixelWriter.setColor(x + centx, y + centy, color);
+                    int x1 = findCX(radius, center_x, center_y, x, y);
+                    int y1 = findCY(radius, center_x, center_y, x, y);
+                    Color color = calcColor(c0, c1, center_x, center_y, x1, y1, x + center_x, y + center_y);
+                    pixelWriter.setColor(x + center_x, y + center_y, color);
                 }
         }
     }
 
-    private static Color calcColor(Color c0, Color c1, int x0, int y0, int x1, int y1, int x, int y) {
+    private static Color calcColor(Color c0, Color c1, int x0, int y0, int x1, int y1, int x, int y) { // метод для вычисления цвета в конкретной точке
+        // (x0,y0) - центр окружности, (x1,y1) - точка, лежащая на окружности, (x,y) - произвольная точка
         double startR = c0.getRed();
         double startG = c0.getGreen();
         double startB = c0.getBlue();
@@ -166,6 +90,16 @@ public class Rasterization {
         return Color.color(r, g, b);
     }
 
+    private static int findCX(int radius, int x0, int y0, int xa, int ya) { // ближайшая точка на окружности координата x
+        // (x0,y0) - центр окружности, (xa,ya) - произвольная точка
+        return (int) (x0 + ((radius * (xa - x0)) / (Math.sqrt((int) (Math.pow(xa - x0, 2) + (int) Math.pow(ya - y0, 2))))));
+    }
+
+    private static int findCY(int radius, int x0, int y0, int xa, int ya) { // ближайшая точка на окружности координата y
+        // (x0,y0) - центр окружности, (xa,ya) - произвольная точка
+        return (int) (y0 + ((radius * (ya - y0)) / (Math.sqrt((int) (Math.pow(xa - x0, 2) + (int) Math.pow(ya - y0, 2))))));
+    }
+
     private static int calculateStartDelta(int radius) {
         return 3 - 2 * radius;
     }
@@ -178,33 +112,36 @@ public class Rasterization {
         return oldDelta + 4 * (x - y) + 10;
     }
 
-    private static boolean areClockwise(int v1x, int v1y, int v2x, int v2y) {
-        return -v1x * v2y + v1y * v2x > 0; // ==0
+    private static boolean areLeft(int v1x, int v1y, int v2x, int v2y) { // вектор лежит против часовой стрелки
+        // return -v1x * v2y + v1y * v2x > 0; // ==0 будет контур границ сектора
+        return v1y*v2x - v1x*v2y > 0;
     }
 
     private static boolean isWithinRadius(int x, int y, int radius) {
-        return x * x + y * y <= radius * radius;
+        return x * x + y * y <= radius * radius; // проверка нахождения точки вне предела радиуса круга
     }
 
-    private static boolean isInsideSector(
-            int px, int py,
-            int centx, int centy,
-            int sectstartx, int sectstarty,
-            int sectendx, int sectendy,
-            int radius) {
+    private static boolean isInsideSector( // проверка нахождения точки внутри сектора
+            int px, int py, // координаты точки для проверки
+            int center_x, int center_y, // центр окружности (х,у)
+            int sectstartx, int sectstarty, // точка начала сектора, от центра окружности проводится вектор к ней
+            int sectendx, int sectendy, // точка конца сектора, аналогично начальной точке
+            int radius) { // радиус окружности
 
-        int relpointx = px - centx;
-        int relpointy = py - centy;
+        int relpointx = px - center_x;
+        int relpointy = py - center_y;
 
-        if (areClockwise(sectstartx, sectstarty, sectendx, sectendy)) {
-            return !(!areClockwise(sectstartx, sectstarty, relpointx, relpointy) &&
-                    areClockwise(sectendx, sectendy, relpointx, relpointy)) &&
+        return (areLeft(sectstartx,sectstarty,relpointx,relpointy) && !areLeft(sectendx,sectendy,relpointx,relpointy) && isWithinRadius(relpointx,relpointy,radius*radius));
+
+       /* if (areLeft(sectstartx, sectstarty, sectendx, sectendy)) {
+            return !(!areLeft(sectstartx, sectstarty, relpointx, relpointy) &&
+                    areLeft(sectendx, sectendy, relpointx, relpointy)) &&
                     isWithinRadius(relpointx, relpointy, radius * radius);
         } else {
-            return !areClockwise(sectstartx, sectstarty, relpointx, relpointy) &&
-                    areClockwise(sectendx, sectendy, relpointx, relpointy) &&
+            return !areLeft(sectstartx, sectstarty, relpointx, relpointy) &&
+                    areLeft(sectendx, sectendy, relpointx, relpointy) &&
                     isWithinRadius(relpointx, relpointy, radius * radius);
-        }
+        } */
 
     }
 
