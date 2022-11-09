@@ -60,14 +60,14 @@ public class Rasterization {
         final PixelWriter pixelWriter = graphicsContext.getPixelWriter();
 
         for (int x = -radius; x <= radius; x++) { // алгоритм заполнения круга, выбираем только те точки, которые находятся в секторе
-            int height = (int) Math.sqrt(radius * radius - x * x); // без проверки радиуса
+            int height = (int) Math.sqrt(radius * radius - x * x); // без проверки радиуса, наиболее эффективный метод
 
             for (int y = -height; y <= height; y++)
                 if (isInsideSector(x + center_x, y + center_y, center_x, center_y, sectstartx, sectstarty, sectendx, sectendy, radius)) {
                     //pixelWriter.setColor(x + centx, y + centy, c0);
-                    int x1 = findCX(radius, center_x, center_y, x, y);
-                    int y1 = findCY(radius, center_x, center_y, x, y);
-                    Color color = calcColor(c0, c1, center_x, center_y, x1, y1, x + center_x, y + center_y);
+                    int circle_x = findCX(radius, center_x, center_y, x, y);
+                    int circle_y = findCY(radius, center_x, center_y, x, y);
+                    Color color = calcColor(c0, c1, center_x, center_y, circle_x, circle_y, x + center_x, y + center_y);
                     pixelWriter.setColor(x + center_x, y + center_y, color);
                 }
         }

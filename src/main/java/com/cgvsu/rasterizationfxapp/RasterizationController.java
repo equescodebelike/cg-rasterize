@@ -21,7 +21,9 @@ public class RasterizationController {
         anchorPane.prefHeightProperty().addListener((ov, oldValue, newValue) -> canvas.setHeight(newValue.doubleValue()));
 
         Rasterization.drawCircle(canvas.getGraphicsContext2D(), 200, 200, 150, Color.BLACK);
-        Rasterization.drawSector(canvas.getGraphicsContext2D(), 200, 200, 0, 4, 4, 0, 150, Color.RED, Color.MAGENTA);
+        Rasterization.drawSector(canvas.getGraphicsContext2D(), 200, 200, -4, 4, 4, -4, 150, Color.BLUE, Color.MAGENTA);
+        // если больше 180 градусов startx++, sectendy--
+        Rasterization.drawSector(canvas.getGraphicsContext2D(), 200, 200, -1, 4, 4, -11, 150, Color.BLUE, Color.MAGENTA);
     }
 
 }
