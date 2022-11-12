@@ -68,10 +68,55 @@ public class Rasterization {
                     int circle_x = findCX(radius, center_x, center_y, x, y);
                     int circle_y = findCY(radius, center_x, center_y, x, y);
                     Color color = calcColor(c0, c1, center_x, center_y, circle_x, circle_y, x + center_x, y + center_y);
-                    pixelWriter.setColor(x + center_x, y + center_y, color);
+                    pixelWriter.setColor(x + center_x, center_y + y, color);
+                    System.out.print(x + " ");
+                    System.out.println(y);
                 }
         }
     }
+
+    public static void drawSector2(
+            final GraphicsContext graphicsContext,
+            int center_x, int center_y, // центр окружности (х,у)
+            int sectstartx, int sectstarty, // точка начала сектора, от центра окружности проводится вектор к ней
+            int sectendx, int sectendy, // точка конца сектора, аналогично начальной точке
+            int radius, // радиус окружности
+            Color c0) {
+        int x = radius;
+        int y = 0;
+        int xChange = 1 - (radius << 1);
+        int yChange = 0;
+        int radiusError = 0;
+        final PixelWriter pixelWriter = graphicsContext.getPixelWriter();
+
+        while (x >= y) {
+            for (int i = center_x - x; i <= center_x + x; i++) {
+                if (isInsideSector(i, center_y + y, center_x, center_y, sectstartx, sectstarty, sectendx, sectendy, radius)) {
+                    pixelWriter.setColor(i, center_y + y, c0);
+                }
+                if (isInsideSector(i, center_y - y, center_x, center_y, sectstartx, sectstarty, sectendx, sectendy, radius)) {
+                    pixelWriter.setColor(i, center_y - y, c0);
+                }
+            }
+            for (int i = center_x - y; i <= center_x + y; i++) {
+                if (isInsideSector(i, center_y + x, center_x, center_y, sectstartx, sectstarty, sectendx, sectendy, radius)) {
+                    pixelWriter.setColor(i, center_y + x, c0);
+                }
+                if (isInsideSector(i, center_y - x, center_x, center_y, sectstartx, sectstarty, sectendx, sectendy, radius)) {
+                    pixelWriter.setColor(i, center_y - x, c0);
+                }
+            }
+            y++;
+            radiusError += yChange;
+            yChange += 2;
+            if (((radiusError << 1) + xChange) > 0) {
+                x--;
+                radiusError += xChange;
+                xChange += 2;
+            }
+        }
+    }
+
 
     private static Color calcColor(Color c0, Color c1, int x0, int y0, int x1, int y1, int x, int y) { // метод для вычисления цвета в конкретной точке
         // (x0,y0) - центр окружности, (x1,y1) - точка, лежащая на окружности, (x,y) - произвольная точка
@@ -112,27 +157,31 @@ public class Rasterization {
         return oldDelta + 4 * (x - y) + 10;
     }
 
-    private static boolean areLeft(int v1x, int v1y, int v2x, int v2y) { // вектор лежит против часовой стрелки
-        // return -v1x * v2y + v1y * v2x > 0; // ==0 будет контур границ сектора
-        return v1y*v2x - v1x*v2y > 0;
+    /* private static boolean areLeft(int v1x, int v1y, int v2x, int v2y) { // вектор лежит против часовой стрелки
+        return -v1x * v2y + v1y * v2x > 0; // ==0 будет контур границ сектора
+        // return v1y * v2x - v1x * v2y > 0;
     }
+    */
+
 
     private static boolean isWithinRadius(int x, int y, int radius) {
         return x * x + y * y <= radius * radius; // проверка нахождения точки вне предела радиуса круга
     }
 
     private static boolean isInsideSector( // проверка нахождения точки внутри сектора
-            int px, int py, // координаты точки для проверки
-            int center_x, int center_y, // центр окружности (х,у)
-            int sectstartx, int sectstarty, // точка начала сектора, от центра окружности проводится вектор к ней
-            int sectendx, int sectendy, // точка конца сектора, аналогично начальной точке
-            int radius) { // радиус окружности
+                                           int x, int y, // координаты точки для проверки
+                                           int center_x, int center_y, // центр окружности (х,у)
+                                           int sectstartx, int sectstarty, // точка начала сектора, от центра окружности проводится вектор к ней
+                                           int sectendx, int sectendy, // точка конца сектора, аналогично начальной точке
+                                           int radius) { // радиус окружности
 
-        int relpointx = px - center_x;
-        int relpointy = py - center_y;
+        int relpointx = x - center_x;
+        int relpointy = y - center_y;
 
-        return (areLeft(sectstartx,sectstarty,relpointx,relpointy) && !areLeft(sectendx,sectendy,relpointx,relpointy) && isWithinRadius(relpointx,relpointy,radius*radius));
-
+        // return (!areLeft(sectstartx,sectstarty,relpointx,relpointy) && areLeft(sectendx,sectendy,relpointx,relpointy));
+        return (sectstartx * relpointy - relpointx * sectstarty > 0 && relpointx * sectendy - sectendx * relpointy > 0);
+        //return ((x - center_x) * (sectstarty - center_y) - (y - center_y) * (sectstartx - center_x)) > 0 && ((x - center_x) * (sectendy - center_y) - (y - center_y) * (sectendx - center_x)) > 0;
+        // return ((sectstartx - center_x) * (x - center_x) + (sectstarty - center_y) * (y - center_y)) > 0 && ((sectendx - center_x) * (x - center_x) + (sectendy - center_y) * (y - center_y)) > 0;
        /* if (areLeft(sectstartx, sectstarty, sectendx, sectendy)) {
             return !(!areLeft(sectstartx, sectstarty, relpointx, relpointy) &&
                     areLeft(sectendx, sectendy, relpointx, relpointy)) &&
