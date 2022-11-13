@@ -62,16 +62,20 @@ public class Rasterization {
         for (int x = -radius; x <= radius; x++) { // алгоритм заполнения круга, выбираем только те точки, которые находятся в секторе
             int height = (int) Math.sqrt(radius * radius - x * x); // без проверки радиуса, наиболее эффективный метод
 
-            for (int y = -height; y <= height; y++)
+            for (int y = -height; y <= height; y++) {
+                if (x == -75 && y == -75) {
+                    System.out.println("penis");
+                }
                 if (isInsideSector(x + center_x, y + center_y, center_x, center_y, sectstartx, sectstarty, sectendx, sectendy, radius)) {
                     //pixelWriter.setColor(x + centx, y + centy, c0);
                     int circle_x = findCX(radius, center_x, center_y, x, y);
                     int circle_y = findCY(radius, center_x, center_y, x, y);
                     Color color = calcColor(c0, c1, center_x, center_y, circle_x, circle_y, x + center_x, y + center_y);
-                    pixelWriter.setColor(x + center_x, center_y + y, color);
+                    pixelWriter.setColor((center_x + x), (center_y - y), color);
                     System.out.print(x + " ");
                     System.out.println(y);
                 }
+            }
         }
     }
 
@@ -179,7 +183,12 @@ public class Rasterization {
         int relpointy = y - center_y;
 
         // return (!areLeft(sectstartx,sectstarty,relpointx,relpointy) && areLeft(sectendx,sectendy,relpointx,relpointy));
-        return (sectstartx * relpointy - relpointx * sectstarty > 0 && relpointx * sectendy - sectendx * relpointy > 0);
+
+        if (relpointy>0) {
+            return ((sectstartx) * relpointy - relpointx * (sectstarty) >= 0 && relpointx * (sectendy) - (sectendx) * relpointy >= 0);
+        }
+
+        return ((sectstartx) * relpointy - relpointx * (sectstarty) <= 0 && relpointx * (sectendy) - (sectendx) * relpointy <= 0);
         //return ((x - center_x) * (sectstarty - center_y) - (y - center_y) * (sectstartx - center_x)) > 0 && ((x - center_x) * (sectendy - center_y) - (y - center_y) * (sectendx - center_x)) > 0;
         // return ((sectstartx - center_x) * (x - center_x) + (sectstarty - center_y) * (y - center_y)) > 0 && ((sectendx - center_x) * (x - center_x) + (sectendy - center_y) * (y - center_y)) > 0;
        /* if (areLeft(sectstartx, sectstarty, sectendx, sectendy)) {
