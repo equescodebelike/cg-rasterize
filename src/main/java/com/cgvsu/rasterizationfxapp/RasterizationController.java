@@ -21,9 +21,11 @@ public class RasterizationController {
         anchorPane.prefHeightProperty().addListener((ov, oldValue, newValue) -> canvas.setHeight(newValue.doubleValue()));
 
         Rasterization.drawCircle(canvas.getGraphicsContext2D(), 200, 200, 150, Color.BLACK);
-         //Rasterization.drawSector(canvas.getGraphicsContext2D(), 200, 200, 1, 4, -1, 4, 150, Color.BLUE, Color.MAGENTA);
-         Rasterization.drawSector(canvas.getGraphicsContext2D(), 200, 200, -1, 2, -10, 10, 150, Color.BLUE, Color.MAGENTA);
-        Rasterization.drawSector(canvas.getGraphicsContext2D(), 200, 200, 4, 1, 1, 4, 150, Color.BLUE, Color.MAGENTA);
+        //Rasterization.drawSector(canvas.getGraphicsContext2D(), 200, 200, 1, 4, -1, 4, 150, Color.BLUE, Color.MAGENTA);
+        //Rasterization.drawSector(canvas.getGraphicsContext2D(), 200, 200, -1, 2, -10, 10, 150, Color.BLUE, Color.MAGENTA);
+        //Rasterization.drawSector(canvas.getGraphicsContext2D(), 200, 200, 4, 1, 1, 4, 150, Color.BLUE, Color.MAGENTA);
+        //Rasterization.drawSector(canvas.getGraphicsContext2D(), 200, 200, -4, -1, 1, -4, 150, Color.BLUE, Color.MAGENTA);
+        Rasterization.drawSector(canvas.getGraphicsContext2D(), 200, 200, -4, 0, 1, 3, 150, Color.BLUE, Color.MAGENTA, true);
         //Rasterization.drawSector2(canvas.getGraphicsContext2D(), 200, 200, 0, -4, -1, -4, 150, Color.BLUE);
         // если больше 180 градусов startx++, sectendy--
         //Rasterization.drawSector(canvas.getGraphicsContext2D(), 200, 200, -1, 4, 4, -11, 150, Color.BLUE, Color.MAGENTA);

@@ -55,7 +55,8 @@ public class Rasterization {
             int sectstartx, int sectstarty, // точка начала сектора, от центра окружности проводится вектор к ней
             int sectendx, int sectendy, // точка конца сектора, аналогично начальной точке
             int radius, // радиус окружности
-            Color c0, Color c1) { // заданные цвета для интерполяции
+            Color c0, Color c1,
+            boolean pi) { // заданные цвета для интерполяции
 
         final PixelWriter pixelWriter = graphicsContext.getPixelWriter();
 
@@ -63,9 +64,7 @@ public class Rasterization {
             int height = (int) Math.sqrt(radius * radius - x * x); // без проверки радиуса, наиболее эффективный метод
 
             for (int y = -height; y <= height; y++) {
-                if (x == -75 && y == -75) {
-                    System.out.println("penis");
-                }
+
                 if (isInsideSector(x + center_x, y + center_y, center_x, center_y, sectstartx, sectstarty, sectendx, sectendy, radius)) {
                     //pixelWriter.setColor(x + centx, y + centy, c0);
                     int circle_x = findCX(radius, center_x, center_y, x, y);
@@ -161,11 +160,10 @@ public class Rasterization {
         return oldDelta + 4 * (x - y) + 10;
     }
 
-    /* private static boolean areLeft(int v1x, int v1y, int v2x, int v2y) { // вектор лежит против часовой стрелки
+    private static boolean areLeft(int v1x, int v1y, int v2x, int v2y) { // вектор лежит против часовой стрелки
         return -v1x * v2y + v1y * v2x > 0; // ==0 будет контур границ сектора
         // return v1y * v2x - v1x * v2y > 0;
     }
-    */
 
 
     private static boolean isWithinRadius(int x, int y, int radius) {
@@ -184,11 +182,16 @@ public class Rasterization {
 
         // return (!areLeft(sectstartx,sectstarty,relpointx,relpointy) && areLeft(sectendx,sectendy,relpointx,relpointy));
 
-        if (relpointy>0) {
+       /* if (relpointy>0) {
             return ((sectstartx) * relpointy - relpointx * (sectstarty) >= 0 && relpointx * (sectendy) - (sectendx) * relpointy >= 0);
         }
 
-        return ((sectstartx) * relpointy - relpointx * (sectstarty) <= 0 && relpointx * (sectendy) - (sectendx) * relpointy <= 0);
+        return ((sectstartx) * relpointy - relpointx * (sectstarty) <= 0 && relpointx * (sectendy) - (sectendx) * relpointy <= 0); */
+
+        if (areLeft(sectstartx, sectstarty, sectendx, sectendy)) {
+            return ((sectstartx) * relpointy - relpointx * (sectstarty) <= 0 && relpointx * (sectendy) - (sectendx) * relpointy <= 0);
+        }
+        return ((sectstartx) * relpointy - relpointx * (sectstarty) >= 0 && relpointx * (sectendy) - (sectendx) * relpointy >= 0);
         //return ((x - center_x) * (sectstarty - center_y) - (y - center_y) * (sectstartx - center_x)) > 0 && ((x - center_x) * (sectendy - center_y) - (y - center_y) * (sectendx - center_x)) > 0;
         // return ((sectstartx - center_x) * (x - center_x) + (sectstarty - center_y) * (y - center_y)) > 0 && ((sectendx - center_x) * (x - center_x) + (sectendy - center_y) * (y - center_y)) > 0;
        /* if (areLeft(sectstartx, sectstarty, sectendx, sectendy)) {
