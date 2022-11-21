@@ -55,8 +55,8 @@ public class Rasterization {
             int sectstartx, int sectstarty, // точка начала сектора, от центра окружности проводится вектор к ней
             int sectendx, int sectendy, // точка конца сектора, аналогично начальной точке
             int radius, // радиус окружности
-            Color c0, Color c1,
-            boolean pi) { // заданные цвета для интерполяции
+            Color c0, Color c1, // заданные цвета для интерполяции
+            boolean pi) { // 180
 
         final PixelWriter pixelWriter = graphicsContext.getPixelWriter();
 
@@ -65,20 +65,35 @@ public class Rasterization {
 
             for (int y = -height; y <= height; y++) {
 
-                if (isInsideSector(x + center_x, y + center_y, center_x, center_y, sectstartx, sectstarty, sectendx, sectendy, radius)) {
-                    //pixelWriter.setColor(x + centx, y + centy, c0);
-                    int circle_x = findCX(radius, center_x, center_y, x, y);
-                    int circle_y = findCY(radius, center_x, center_y, x, y);
-                    Color color = calcColor(c0, c1, center_x, center_y, circle_x, circle_y, x + center_x, y + center_y);
-                    pixelWriter.setColor((center_x + x), (center_y - y), color);
-                    System.out.print(x + " ");
-                    System.out.println(y);
+                int circle_x = findCX(radius, center_x, center_y, x, y); // координаты ближайшей точки лежащей на краю окружности
+                int circle_y = findCY(radius, center_x, center_y, x, y);
+                Color color = calcColor(c0, c1, center_x, center_y, circle_x, circle_y, x + center_x, y + center_y); // интерполяция цвета
+
+                if (pi) { // идем по большей или меньшей дуге
+
+                    if (!isInsideSector(x + center_x, y + center_y, center_x, center_y, sectstartx, sectstarty, sectendx, sectendy, radius)) {
+
+                        pixelWriter.setColor((center_x + x), (center_y - y), color); // координаты javafx
+                    }
+                } else {
+
+                    if (isInsideSector(x + center_x, y + center_y, center_x, center_y, sectstartx, sectstarty, sectendx, sectendy, radius)) {
+
+                        pixelWriter.setColor((center_x + x), (center_y - y), color); // координаты javafx
+
+
+                    }
                 }
             }
         }
     }
 
-    public static void drawSector2(
+    /**
+     * Метод отрисовки и интерполяции сектора окружности
+     * (альтернативный метод, менее эффективный)
+     */
+
+    public static void drawSectorScanline(
             final GraphicsContext graphicsContext,
             int center_x, int center_y, // центр окружности (х,у)
             int sectstartx, int sectstarty, // точка начала сектора, от центра окружности проводится вектор к ней
@@ -165,11 +180,6 @@ public class Rasterization {
         // return v1y * v2x - v1x * v2y > 0;
     }
 
-
-    private static boolean isWithinRadius(int x, int y, int radius) {
-        return x * x + y * y <= radius * radius; // проверка нахождения точки вне предела радиуса круга
-    }
-
     private static boolean isInsideSector( // проверка нахождения точки внутри сектора
                                            int x, int y, // координаты точки для проверки
                                            int center_x, int center_y, // центр окружности (х,у)
@@ -180,29 +190,10 @@ public class Rasterization {
         int relpointx = x - center_x;
         int relpointy = y - center_y;
 
-        // return (!areLeft(sectstartx,sectstarty,relpointx,relpointy) && areLeft(sectendx,sectendy,relpointx,relpointy));
-
-       /* if (relpointy>0) {
-            return ((sectstartx) * relpointy - relpointx * (sectstarty) >= 0 && relpointx * (sectendy) - (sectendx) * relpointy >= 0);
-        }
-
-        return ((sectstartx) * relpointy - relpointx * (sectstarty) <= 0 && relpointx * (sectendy) - (sectendx) * relpointy <= 0); */
-
-        if (areLeft(sectstartx, sectstarty, sectendx, sectendy)) {
+        if (areLeft(sectstartx, sectstarty, sectendx, sectendy)) { // проверяем взаимное расположение начального и конечного сектора для правильного распределения четвертей графика
             return ((sectstartx) * relpointy - relpointx * (sectstarty) <= 0 && relpointx * (sectendy) - (sectendx) * relpointy <= 0);
         }
         return ((sectstartx) * relpointy - relpointx * (sectstarty) >= 0 && relpointx * (sectendy) - (sectendx) * relpointy >= 0);
-        //return ((x - center_x) * (sectstarty - center_y) - (y - center_y) * (sectstartx - center_x)) > 0 && ((x - center_x) * (sectendy - center_y) - (y - center_y) * (sectendx - center_x)) > 0;
-        // return ((sectstartx - center_x) * (x - center_x) + (sectstarty - center_y) * (y - center_y)) > 0 && ((sectendx - center_x) * (x - center_x) + (sectendy - center_y) * (y - center_y)) > 0;
-       /* if (areLeft(sectstartx, sectstarty, sectendx, sectendy)) {
-            return !(!areLeft(sectstartx, sectstarty, relpointx, relpointy) &&
-                    areLeft(sectendx, sectendy, relpointx, relpointy)) &&
-                    isWithinRadius(relpointx, relpointy, radius * radius);
-        } else {
-            return !areLeft(sectstartx, sectstarty, relpointx, relpointy) &&
-                    areLeft(sectendx, sectendy, relpointx, relpointy) &&
-                    isWithinRadius(relpointx, relpointy, radius * radius);
-        } */
 
     }
 
